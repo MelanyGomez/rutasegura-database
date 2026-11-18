@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Crear tabla de paradas -->
+    <changeSet id="20261111-create-route-stop" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="route_stop"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="route_stop">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_route_stop"
+                             nullable="false"/>
+            </column>
+
+            <column name="route_plan_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="sequence_number" type="INT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="name" type="VARCHAR(150)"/>
+
+            <column name="address" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="latitude" type="DECIMAL(10,7)"/>
+
+            <column name="longitude" type="DECIMAL(10,7)"/>
+
+            <column name="planned_arrival_at" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="actual_arrival_at" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="actual_departure_at" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="notes" type="VARCHAR(500)"/>
+
+            <!-- Auditoría -->
+            <column name="ts_created" type="TIMESTAMP WITH TIME ZONE"
+                    defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="us_created" type="BIGINT"/>
+            <column name="ts_modified" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_modified" type="BIGINT"/>
+            <column name="ts_deleted" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_deleted" type="BIGINT"/>
+        </createTable>
+
+        <!-- Evitar números de secuencia duplicados dentro de una ruta -->
+        <addUniqueConstraint
+                tableName="route_stop"
+                columnNames="route_plan_id,sequence_number"
+                constraintName="uq_route_stop_sequence"/>
+
+        <createIndex
+                tableName="route_stop"
+                indexName="idx_route_stop_route">
+            <column name="route_plan_id"/>
+        </createIndex>
+
+        <rollback>
+            <dropTable tableName="route_stop"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar parada con ruta -->
+    <changeSet id="20261111-fk-route-stop-route" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="route_stop"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_route_stop_route"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="route_stop"
+                baseColumnNames="route_plan_id"
+                constraintName="fk_route_stop_route"
+                referencedTableName="route_plan"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="route_stop"
+                    constraintName="fk_route_stop_route"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar auditoría con usuarios -->
+    <changeSet id="20261111-fk-route-stop-audit" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="route_stop"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_route_stop_created_by"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="route_stop"
+                baseColumnNames="us_created"
+                constraintName="fk_route_stop_created_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="route_stop"
+                baseColumnNames="us_modified"
+                constraintName="fk_route_stop_modified_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="route_stop"
+                baseColumnNames="us_deleted"
+                constraintName="fk_route_stop_deleted_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="route_stop"
+                    constraintName="fk_route_stop_deleted_by"/>
+            <dropForeignKeyConstraint
+                    baseTableName="route_stop"
+                    constraintName="fk_route_stop_modified_by"/>
+            <dropForeignKeyConstraint
+                    baseTableName="route_stop"
+                    constraintName="fk_route_stop_created_by"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

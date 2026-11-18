@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Crear tabla de usuarios -->
+    <changeSet id="20261111-create-app-user" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="app_user"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="app_user">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_app_user"
+                             nullable="false"/>
+            </column>
+
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="last_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="email" type="VARCHAR(150)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="password_hash" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="status_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="ts_created" type="TIMESTAMP WITH TIME ZONE"
+                    defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="us_created" type="BIGINT"/>
+            <column name="ts_modified" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_modified" type="BIGINT"/>
+            <column name="ts_deleted" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_deleted" type="BIGINT"/>
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="app_user"
+                columnNames="email"
+                constraintName="uq_app_user_email"/>
+
+        <rollback>
+            <dropTable tableName="app_user"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar usuario con su estado -->
+    <changeSet id="20261111-fk-app-user-status" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="app_user"/>
+            <tableExists tableName="cat_status"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_app_user_status"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="app_user"
+                baseColumnNames="status_id"
+                constraintName="fk_app_user_status"
+                referencedTableName="cat_status"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="app_user"
+                    constraintName="fk_app_user_status"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar campos de auditoría con usuarios -->
+    <changeSet id="20261111-fk-app-user-audit" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="app_user"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_app_user_created_by"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="app_user"
+                baseColumnNames="us_created"
+                constraintName="fk_app_user_created_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="app_user"
+                baseColumnNames="us_modified"
+                constraintName="fk_app_user_modified_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="app_user"
+                baseColumnNames="us_deleted"
+                constraintName="fk_app_user_deleted_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="app_user"
+                    constraintName="fk_app_user_deleted_by"/>
+            <dropForeignKeyConstraint
+                    baseTableName="app_user"
+                    constraintName="fk_app_user_modified_by"/>
+            <dropForeignKeyConstraint
+                    baseTableName="app_user"
+                    constraintName="fk_app_user_created_by"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

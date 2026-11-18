@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Crear tabla de sesiones -->
+    <changeSet id="20261111-create-user-session" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="user_session"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="user_session">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_user_session"
+                             nullable="false"/>
+            </column>
+
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="refresh_token_hash" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="expires_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="revoked_at" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="last_activity_at" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="ip_address" type="VARCHAR(45)"/>
+
+            <column name="user_agent" type="VARCHAR(1000)"/>
+
+            <!-- Auditoría -->
+            <column name="ts_created" type="TIMESTAMP WITH TIME ZONE"
+                    defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="us_created" type="BIGINT"/>
+            <column name="ts_modified" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_modified" type="BIGINT"/>
+            <column name="ts_deleted" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_deleted" type="BIGINT"/>
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="user_session"
+                columnNames="refresh_token_hash"
+                constraintName="uq_user_session_refresh_token"/>
+
+        <createIndex
+                tableName="user_session"
+                indexName="idx_user_session_user">
+            <column name="user_id"/>
+        </createIndex>
+
+        <rollback>
+            <dropTable tableName="user_session"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar sesión con usuario -->
+    <changeSet id="20261111-fk-user-session-user" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="user_session"/>
+            <tableExists tableName="app_user"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_user_session_user"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="user_session"
+                baseColumnNames="user_id"
+                constraintName="fk_user_session_user"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="user_session"
+                    constraintName="fk_user_session_user"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar auditoría con usuarios -->
+    <changeSet id="20261111-fk-user-session-audit" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="user_session"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_user_session_created_by"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="user_session"
+                baseColumnNames="us_created"
+                constraintName="fk_user_session_created_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="user_session"
+                baseColumnNames="us_modified"
+                constraintName="fk_user_session_modified_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="user_session"
+                baseColumnNames="us_deleted"
+                constraintName="fk_user_session_deleted_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="user_session"
+                    constraintName="fk_user_session_deleted_by"/>
+            <dropForeignKeyConstraint
+                    baseTableName="user_session"
+                    constraintName="fk_user_session_modified_by"/>
+            <dropForeignKeyConstraint
+                    baseTableName="user_session"
+                    constraintName="fk_user_session_created_by"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

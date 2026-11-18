@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="20261111-add-audit-cat-role" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="cat_role"/>
+            <not>
+                <columnExists tableName="cat_role" columnName="ts_created"/>
+            </not>
+        </preConditions>
+
+        <addColumn tableName="cat_role">
+            <column name="ts_created" type="TIMESTAMP WITH TIME ZONE"
+                    defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="us_created" type="BIGINT"/>
+            <column name="ts_modified" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_modified" type="BIGINT"/>
+            <column name="ts_deleted" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_deleted" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20261111-add-audit-cat-status" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="cat_status"/>
+            <not>
+                <columnExists tableName="cat_status" columnName="ts_created"/>
+            </not>
+        </preConditions>
+
+        <addColumn tableName="cat_status">
+            <column name="ts_created" type="TIMESTAMP WITH TIME ZONE"
+                    defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="us_created" type="BIGINT"/>
+            <column name="ts_modified" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_modified" type="BIGINT"/>
+            <column name="ts_deleted" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_deleted" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

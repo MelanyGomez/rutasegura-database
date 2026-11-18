@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Crear tabla de vehículos -->
+    <changeSet id="20261111-create-vehicle" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="vehicle"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="vehicle">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_vehicle"
+                             nullable="false"/>
+            </column>
+
+            <column name="owner_user_id" type="BIGINT"/>
+
+            <column name="company_id" type="BIGINT"/>
+
+            <column name="plate" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="vin" type="VARCHAR(17)"/>
+
+            <column name="brand" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="model" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="model_year" type="SMALLINT"/>
+
+            <column name="color" type="VARCHAR(50)"/>
+
+            <column name="status_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <!-- Auditoría -->
+            <column name="ts_created" type="TIMESTAMP WITH TIME ZONE"
+                    defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="us_created" type="BIGINT"/>
+            <column name="ts_modified" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_modified" type="BIGINT"/>
+            <column name="ts_deleted" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_deleted" type="BIGINT"/>
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="vehicle"
+                columnNames="plate"
+                constraintName="uq_vehicle_plate"/>
+
+        <createIndex
+                tableName="vehicle"
+                indexName="idx_vehicle_owner_user">
+            <column name="owner_user_id"/>
+        </createIndex>
+
+        <createIndex
+                tableName="vehicle"
+                indexName="idx_vehicle_company">
+            <column name="company_id"/>
+        </createIndex>
+
+        <createIndex
+                tableName="vehicle"
+                indexName="idx_vehicle_status">
+            <column name="status_id"/>
+        </createIndex>
+
+        <rollback>
+            <dropTable tableName="vehicle"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar vehículo con usuario propietario -->
+    <changeSet id="20261111-fk-vehicle-owner-user" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="vehicle"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_vehicle_owner_user"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="vehicle"
+                baseColumnNames="owner_user_id"
+                constraintName="fk_vehicle_owner_user"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="vehicle"
+                    constraintName="fk_vehicle_owner_user"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar vehículo con empresa propietaria -->
+    <changeSet id="20261111-fk-vehicle-company" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="vehicle"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_vehicle_company"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="vehicle"
+                baseColumnNames="company_id"
+                constraintName="fk_vehicle_company"
+                referencedTableName="company"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="vehicle"
+                    constraintName="fk_vehicle_company"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar vehículo con estado -->
+    <changeSet id="20261111-fk-vehicle-status" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="vehicle"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_vehicle_status"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="vehicle"
+                baseColumnNames="status_id"
+                constraintName="fk_vehicle_status"
+                referencedTableName="cat_status"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="vehicle"
+                    constraintName="fk_vehicle_status"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar auditoría con usuarios -->
+    <changeSet id="20261111-fk-vehicle-audit" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="vehicle"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_vehicle_created_by"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="vehicle"
+                baseColumnNames="us_created"
+                constraintName="fk_vehicle_created_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="vehicle"
+                baseColumnNames="us_modified"
+                constraintName="fk_vehicle_modified_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="vehicle"
+                baseColumnNames="us_deleted"
+                constraintName="fk_vehicle_deleted_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="vehicle"
+                    constraintName="fk_vehicle_deleted_by"/>
+            <dropForeignKeyConstraint
+                    baseTableName="vehicle"
+                    constraintName="fk_vehicle_modified_by"/>
+            <dropForeignKeyConstraint
+                    baseTableName="vehicle"
+                    constraintName="fk_vehicle_created_by"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

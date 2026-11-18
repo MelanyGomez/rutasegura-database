@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="
+http://www.liquibase.org/xml/ns/dbchangelog
+https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <include file="db/changelog/v1.0/20261110-cat-status.xml"/>
+    <include file="db/changelog/v1.0/20261110-cat-role.xml"/>
+    <include file="db/changelog/v1.0/20261110-add-audit-to-catalogs.xml"/>
+
+    <include file="db/changelog/v1.0/20261110-app-user.xml"/>
+    <include file="db/changelog/v1.0/20261110-user-session.xml"/>
+    <include file="db/changelog/v1.0/20261110-company.xml"/>
+    <include file="db/changelog/v1.0/20261110-company-member.xml"/>
+    <include file="db/changelog/v1.0/20261110-vehicle.xml"/>
+    <include file="db/changelog/v1.0/20261111-vehicle-assignment.xml"/>
+    <include file="db/changelog/v1.0/20261111-route-plan.xml"/>
+    <include file="db/changelog/v1.0/20261111-route-stop.xml"/>
+</databaseChangeLog>

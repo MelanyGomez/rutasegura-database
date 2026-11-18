@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Crear tabla de miembros de empresas -->
+    <changeSet id="20261111-create-company-member" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="company_member"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="company_member">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_company_member"
+                             nullable="false"/>
+            </column>
+
+            <column name="company_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="role_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="status_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="joined_at" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <!-- Auditoría -->
+            <column name="ts_created" type="TIMESTAMP WITH TIME ZONE"
+                    defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="us_created" type="BIGINT"/>
+            <column name="ts_modified" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_modified" type="BIGINT"/>
+            <column name="ts_deleted" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_deleted" type="BIGINT"/>
+        </createTable>
+
+        <!-- Un usuario solo puede tener una membresía por empresa -->
+        <addUniqueConstraint
+                tableName="company_member"
+                columnNames="company_id,user_id"
+                constraintName="uq_company_member_company_user"/>
+
+        <createIndex
+                tableName="company_member"
+                indexName="idx_company_member_user">
+            <column name="user_id"/>
+        </createIndex>
+
+        <createIndex
+                tableName="company_member"
+                indexName="idx_company_member_company">
+            <column name="company_id"/>
+        </createIndex>
+
+        <rollback>
+            <dropTable tableName="company_member"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar membresía con empresa -->
+    <changeSet id="20261111-fk-company-member-company" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="company_member"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_company_member_company"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="company_member"
+                baseColumnNames="company_id"
+                constraintName="fk_company_member_company"
+                referencedTableName="company"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="company_member"
+                    constraintName="fk_company_member_company"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar membresía con usuario -->
+    <changeSet id="20261111-fk-company-member-user" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="company_member"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_company_member_user"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="company_member"
+                baseColumnNames="user_id"
+                constraintName="fk_company_member_user"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="company_member"
+                    constraintName="fk_company_member_user"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar membresía con rol -->
+    <changeSet id="20261111-fk-company-member-role" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="company_member"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_company_member_role"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="company_member"
+                baseColumnNames="role_id"
+                constraintName="fk_company_member_role"
+                referencedTableName="cat_role"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="company_member"
+                    constraintName="fk_company_member_role"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar membresía con estado -->
+    <changeSet id="20261111-fk-company-member-status" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="company_member"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_company_member_status"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="company_member"
+                baseColumnNames="status_id"
+                constraintName="fk_company_member_status"
+                referencedTableName="cat_status"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="company_member"
+                    constraintName="fk_company_member_status"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar auditoría con usuarios -->
+    <changeSet id="20261111-fk-company-member-audit" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="company_member"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_company_member_created_by"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="company_member"
+                baseColumnNames="us_created"
+                constraintName="fk_company_member_created_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="company_member"
+                baseColumnNames="us_modified"
+                constraintName="fk_company_member_modified_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="company_member"
+                baseColumnNames="us_deleted"
+                constraintName="fk_company_member_deleted_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="company_member"
+                    constraintName="fk_company_member_deleted_by"/>
+            <dropForeignKeyConstraint
+                    baseTableName="company_member"
+                    constraintName="fk_company_member_modified_by"/>
+            <dropForeignKeyConstraint
+                    baseTableName="company_member"
+                    constraintName="fk_company_member_created_by"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

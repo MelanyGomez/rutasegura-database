@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Crear tabla de rutas -->
+    <changeSet id="20261111-create-route-plan" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="route_plan"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="route_plan">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_route_plan"
+                             nullable="false"/>
+            </column>
+
+            <column name="company_id" type="BIGINT"/>
+
+            <column name="created_by_user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="vehicle_assignment_id" type="BIGINT"/>
+
+            <column name="name" type="VARCHAR(150)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="description" type="VARCHAR(1000)"/>
+
+            <column name="origin_address" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="origin_latitude" type="DECIMAL(10,7)"/>
+            <column name="origin_longitude" type="DECIMAL(10,7)"/>
+
+            <column name="destination_address" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="destination_latitude" type="DECIMAL(10,7)"/>
+            <column name="destination_longitude" type="DECIMAL(10,7)"/>
+
+            <column name="planned_start_at" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="actual_start_at" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="actual_end_at" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="status_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <!-- Auditoría -->
+            <column name="ts_created" type="TIMESTAMP WITH TIME ZONE"
+                    defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="us_created" type="BIGINT"/>
+            <column name="ts_modified" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_modified" type="BIGINT"/>
+            <column name="ts_deleted" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_deleted" type="BIGINT"/>
+        </createTable>
+
+        <createIndex
+                tableName="route_plan"
+                indexName="idx_route_plan_company">
+            <column name="company_id"/>
+        </createIndex>
+
+        <createIndex
+                tableName="route_plan"
+                indexName="idx_route_plan_created_by">
+            <column name="created_by_user_id"/>
+        </createIndex>
+
+        <createIndex
+                tableName="route_plan"
+                indexName="idx_route_plan_assignment">
+            <column name="vehicle_assignment_id"/>
+        </createIndex>
+
+        <createIndex
+                tableName="route_plan"
+                indexName="idx_route_plan_status">
+            <column name="status_id"/>
+        </createIndex>
+
+        <rollback>
+            <dropTable tableName="route_plan"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar ruta con empresa -->
+    <changeSet id="20261111-fk-route-plan-company" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="route_plan"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_route_plan_company"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="route_plan"
+                baseColumnNames="company_id"
+                constraintName="fk_route_plan_company"
+                referencedTableName="company"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="route_plan"
+                    constraintName="fk_route_plan_company"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar ruta con usuario creador -->
+    <changeSet id="20261111-fk-route-plan-user" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="route_plan"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_route_plan_created_by_user"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="route_plan"
+                baseColumnNames="created_by_user_id"
+                constraintName="fk_route_plan_created_by_user"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="route_plan"
+                    constraintName="fk_route_plan_created_by_user"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar ruta con asignación de vehículo -->
+    <changeSet id="20261111-fk-route-plan-assignment" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="route_plan"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_route_plan_assignment"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="route_plan"
+                baseColumnNames="vehicle_assignment_id"
+                constraintName="fk_route_plan_assignment"
+                referencedTableName="vehicle_assignment"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="route_plan"
+                    constraintName="fk_route_plan_assignment"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar ruta con estado -->
+    <changeSet id="20261111-fk-route-plan-status" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="route_plan"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_route_plan_status"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="route_plan"
+                baseColumnNames="status_id"
+                constraintName="fk_route_plan_status"
+                referencedTableName="cat_status"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="route_plan"
+                    constraintName="fk_route_plan_status"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar auditoría con usuarios -->
+    <changeSet id="20261111-fk-route-plan-audit" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="route_plan"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_route_plan_created_by"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="route_plan"
+                baseColumnNames="us_created"
+                constraintName="fk_route_plan_created_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="route_plan"
+                baseColumnNames="us_modified"
+                constraintName="fk_route_plan_modified_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="route_plan"
+                baseColumnNames="us_deleted"
+                constraintName="fk_route_plan_deleted_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="route_plan"
+                    constraintName="fk_route_plan_deleted_by"/>
+            <dropForeignKeyConstraint
+                    baseTableName="route_plan"
+                    constraintName="fk_route_plan_modified_by"/>
+            <dropForeignKeyConstraint
+                    baseTableName="route_plan"
+                    constraintName="fk_route_plan_created_by"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

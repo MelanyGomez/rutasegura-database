@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Crear tabla de asignaciones de vehículos -->
+    <changeSet id="20261111-vehicle-assignment" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="vehicle_assignment"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="vehicle_assignment">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_vehicle_assignment"
+                             nullable="false"/>
+            </column>
+
+            <column name="vehicle_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="company_member_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="assigned_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="ended_at" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="notes" type="VARCHAR(500)"/>
+
+            <!-- Auditoría -->
+            <column name="ts_created" type="TIMESTAMP WITH TIME ZONE"
+                    defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="us_created" type="BIGINT"/>
+            <column name="ts_modified" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_modified" type="BIGINT"/>
+            <column name="ts_deleted" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="us_deleted" type="BIGINT"/>
+        </createTable>
+
+        <createIndex
+                tableName="vehicle_assignment"
+                indexName="idx_vehicle_assignment_vehicle">
+            <column name="vehicle_id"/>
+        </createIndex>
+
+        <createIndex
+                tableName="vehicle_assignment"
+                indexName="idx_vehicle_assignment_member">
+            <column name="company_member_id"/>
+        </createIndex>
+
+        <rollback>
+            <dropTable tableName="vehicle_assignment"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar asignación con vehículo -->
+    <changeSet id="20261111-fk-vehicle-assignment-vehicle" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="vehicle_assignment"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_vehicle_assignment_vehicle"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="vehicle_assignment"
+                baseColumnNames="vehicle_id"
+                constraintName="fk_vehicle_assignment_vehicle"
+                referencedTableName="vehicle"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="vehicle_assignment"
+                    constraintName="fk_vehicle_assignment_vehicle"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar asignación con miembro de empresa -->
+    <changeSet id="20261111-fk-vehicle-assignment-member" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="vehicle_assignment"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_vehicle_assignment_member"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="vehicle_assignment"
+                baseColumnNames="company_member_id"
+                constraintName="fk_vehicle_assignment_member"
+                referencedTableName="company_member"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="vehicle_assignment"
+                    constraintName="fk_vehicle_assignment_member"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Relacionar auditoría con usuarios -->
+    <changeSet id="20261111-fk-vehicle-assignment-audit" author="melany">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="vehicle_assignment"/>
+            <not>
+                <foreignKeyConstraintExists
+                        foreignKeyName="fk_vehicle_assignment_created_by"/>
+            </not>
+        </preConditions>
+
+        <addForeignKeyConstraint
+                baseTableName="vehicle_assignment"
+                baseColumnNames="us_created"
+                constraintName="fk_vehicle_assignment_created_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="vehicle_assignment"
+                baseColumnNames="us_modified"
+                constraintName="fk_vehicle_assignment_modified_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="vehicle_assignment"
+                baseColumnNames="us_deleted"
+                constraintName="fk_vehicle_assignment_deleted_by"
+                referencedTableName="app_user"
+                referencedColumnNames="id"/>
+
+        <rollback>
+            <dropForeignKeyConstraint
+                    baseTableName="vehicle_assignment"
+                    constraintName="fk_vehicle_assignment_deleted_by"/>
+            <dropForeignKeyConstraint
+                    baseTableName="vehicle_assignment"
+                    constraintName="fk_vehicle_assignment_modified_by"/>
+            <dropForeignKeyConstraint
+                    baseTableName="vehicle_assignment"
+                    constraintName="fk_vehicle_assignment_created_by"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
